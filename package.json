@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Rmaceac/tinyapp/issues"
   },
-  "homepage": "https://github.com/Rmaceac/tinyapp#readme"
+  "homepage": "https://github.com/Rmaceac/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
