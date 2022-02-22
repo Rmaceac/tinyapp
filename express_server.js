@@ -1,8 +1,11 @@
 const { application } = require('express');
 const express = require('express');
+const morgan = require('morgan');
 const bodyParser = require("body-parser");
 
 const app = express();
+app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({extended: true}));
 const PORT = 8080;
 
 app.set("view engine", "ejs");
@@ -22,7 +25,6 @@ const generateShortURL = () => {
   return result;
 };
 
-app.use(bodyParser.urlencoded({extended: true}));
 
 app.get("/", (req, res) => {
   res.send("Hello");
@@ -50,15 +52,8 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
-});
-
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -67,6 +62,12 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL
   };
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
