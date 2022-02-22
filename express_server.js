@@ -7,7 +7,7 @@ const PORT = 8080;
 
 app.set("view engine", "ejs");
 
-const urlDatabase = {
+let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
@@ -34,13 +34,23 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  res.send("Ok");
+  const newShortURL = generateShortURL();
+  const newLongURL = req.body.longURL;
+  urlDatabase[newShortURL] = newLongURL;
+  res.redirect("/urls");
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(longURL);
 });
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
+
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
