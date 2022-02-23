@@ -17,6 +17,16 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  }
+
+};
+
 const generateShortURL = () => {
   let result = "";
   const charsList = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -27,11 +37,12 @@ const generateShortURL = () => {
   return result;
 };
 
-
+// ORIGINAL TEST HOME PAGE
 app.get("/", (req, res) => {
   res.send("Hello");
 });
 
+// LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -68,9 +79,13 @@ app.get("/register", (req, res) => {
 });
 
 //REGISTERS A NEW USER AND STORES THEIR INFORMATION IN THE DATABASE
-// app.post("/register", (req, res) => {
-
-// });
+app.post("/register", (req, res) => {
+  const userID = generateShortURL();
+  users[userID] = { id: userID, email: req.body.email, password: req.body.password};
+  res.cookie("username", userID);
+  console.log(users);
+  res.redirect("/urls");
+});
 
 // DISPLAYS THE URL DATABASE IN JSON FORMAT ON THE BROWSER
 app.get("/urls.json", (req, res) => {
