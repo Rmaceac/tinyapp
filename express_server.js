@@ -5,12 +5,13 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 
 const app = express();
+
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
-const PORT = 8080;
-
 app.set("view engine", "ejs");
+
+const PORT = 8080;
 
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -19,10 +20,10 @@ let urlDatabase = {
 
 const users = {
 
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+  "randomUser": {
+    id: "7shka6",
+    email: "someone@example.com",
+    password: "fdsaJu7"
   }
 
 };
