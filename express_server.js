@@ -40,27 +40,57 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.post("/urls", (req, res) => {
-  const newShortURL = generateShortURL();
-  const newLongURL = req.body.longURL;
-  urlDatabase[newShortURL] = newLongURL;
-  res.redirect("/urls");
-});
-
+// REDIRECTS THE USER TO THE LONG URL OF A SPECIFIC SHORTURL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
 });
 
+// CREATES A NEW SHORT URL FOR A PROVIDED LONGURL
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
+app.post("/urls/new", (req, res) => {
+  const newShortURL = generateShortURL();
+  const newLongURL = req.body.longURL;
+  urlDatabase[newShortURL] = newLongURL;
+  res.redirect("/urls");
+});
+
+// DISPLAYS THE REGISTER  NEW USER PAGE AND FORM
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+//REGISTERS A NEW USER AND STORES THEIR INFORMATION IN THE DATABASE
+// app.post("/register", (req, res) => {
+
+// });
+
+// DISPLAYS THE URL DATABASE IN JSON FORMAT ON THE BROWSER
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// LOGS A USER IN AND STORES USERNAME COOKIE
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie("username", username);
+  res.redirect("/urls");
+});
+
+// LOGS THE USER OUT AND CLEARS USERNAME COOKIE
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
+// DISPLAYS A SPECIFIC SHORT URL'S DETAILS
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     longURL: urlDatabase[req.params.shortURL],
@@ -70,29 +100,21 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// EDITS THE LONG URL FOR ITS ASSOCIATED SHORT URL IN THE DATABASE
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect("/urls");
 });
 
+// DELETES A URL FROM THE MAIN URL INDEX PAGE
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
-app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username);
-  res.redirect("/urls");
-});
-
-app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect("/urls");
-});
-
+// SERVER LISTENING ON PORT INDICATED ABOVE
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}.`);
 });
