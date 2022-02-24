@@ -84,12 +84,8 @@ app.get("/register", (req, res) => {
 //REGISTERS A NEW USER AND STORES THEIR INFORMATION IN THE DATABASE
 app.post("/register", (req, res) => {
 
-  if (!req.body.email || !req.body.password) {
-    res.status(400).send('400 - Bad Request');
-  }
-
-  if (!authenticateUser(users, req.body.email)) {
-    return res.status(400).send('400 - Email has already been registered');
+  if (!authenticateUser(users, req.body.email, req.body.password)) {
+    return res.status(400).send('400 - Bad request');
   }
 
   const userID = generateShortURL();
@@ -103,6 +99,7 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// DISPLAY LOGIN PAGE
 app.get("/login", (req, res) => {
   res.render("login");
 });
@@ -110,6 +107,7 @@ app.get("/login", (req, res) => {
 // LOGS A USER IN AND STORES USERNAME COOKIE
 app.post("/login", (req, res) => {
   const userID = req.body.username;
+  console.log(req.body.username);
   res.cookie("user_id", userID);
   res.redirect("/urls");
 });

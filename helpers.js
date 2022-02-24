@@ -12,7 +12,11 @@ const { response } = require("express");
 //     }
 // };
 
-const authenticateUser = (database, email) => {
+const authenticateUser = (database, email, password) => {
+  if (!email || !password) {
+    return false;
+  }
+  
   for (const user in database) {
     if (database[user].email === email) {
       return false;
