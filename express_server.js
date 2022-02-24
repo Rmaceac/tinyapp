@@ -62,14 +62,19 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-// CREATES A NEW SHORT URL FOR A PROVIDED LONGURL
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     "user_id": req.cookies["user_id"]
   };
-  res.render("urls_new", templateVars);
+  // to redirect clients who are not logged in
+  if (!req.cookies["user_id"]) {
+    return res.redirect("/login");
+  }
+
+  return res.render("urls_new", templateVars);
 });
 
+// CREATES A NEW SHORT URL FOR A PROVIDED LONGURL
 app.post("/urls/new", (req, res) => {
   const newShortURL = generateShortURL();
   const newLongURL = req.body.longURL;
