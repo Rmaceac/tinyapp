@@ -21,6 +21,4 @@ const checkUser = (database, userInfo, res) => {
 
 
 
-
-
 module.exports = { isExistingUser, checkUser };

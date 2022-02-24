@@ -1,11 +1,12 @@
 const { application } = require('express');
 const express = require('express');
+const res = require('express/lib/response');
 const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 
 const { isExistingUser, checkUser } = require('./helpers');
-const res = require('express/lib/response');
+const { urlDatabase, users } = require('./database');
 
 const app = express();
 
@@ -16,20 +17,7 @@ app.set("view engine", "ejs");
 
 const PORT = 8080;
 
-let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
-const users = {
-
-  "randomUser": {
-    id: "randomUser",
-    email: "someone@example.com",
-    password: "pass"
-  }
-
-};
+// };
 
 const generateShortURL = () => {
   let result = "";
@@ -63,11 +51,13 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  const userID = req.cookies.user_id;
+
   const templateVars = {
-    "user_id": req.cookies["user_id"]
+    "user_id": userID
   };
   // to redirect clients who are not logged in
-  if (!req.cookies["user_id"]) {
+  if (!userID) {
     return res.redirect("/login");
   }
 

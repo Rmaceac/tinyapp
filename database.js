@@ -8,7 +8,7 @@ const users = {
   "randomUser": {
     id: "randomUser",
     email: "someone@example.com",
-    password: "fdsaJu7"
+    password: "pass"
   }
 
 };
