@@ -33,8 +33,11 @@ app.get("/urls", (req, res) => {
 });
 
 // REDIRECTS THE USER TO THE LONG URL OF A SPECIFIC SHORTURL
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
+app.get("/u/:id", (req, res) => {
+  const shortURL = req.params.id;
+  if (!urlDatabase[shortURL]) {
+    res.status(404).send("404 - That path does not exist...");
+  }
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
