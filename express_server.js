@@ -4,7 +4,8 @@ const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 
-const { isExistingUser } = require('./helpers');
+const { isExistingUser, checkUser } = require('./helpers');
+const res = require('express/lib/response');
 
 const app = express();
 
@@ -25,7 +26,7 @@ const users = {
   "randomUser": {
     id: "randomUser",
     email: "someone@example.com",
-    password: "fdsaJu7"
+    password: "pass"
   }
 
 };
@@ -111,12 +112,11 @@ app.post("/login", (req, res) => {
   
   if (!req.body.email || !req.body.password) {
     return res.status(400).send('400 - Please fill out all fields.');
-  } else if (!isExistingUser()) {
-    return res.status(400).send('400 - That email is not yet registered.')
+  } else if (!isExistingUser(users, req.body.email)) {
+    return res.status(403).send('403 - That email is not yet registered.');
   }
-  
-  const userID = req.body.username;
-  res.cookie("user_id", userID);
+
+  checkUser(users, req.body, res);
   res.redirect("/urls");
 });
 

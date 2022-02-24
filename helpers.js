@@ -1,17 +1,5 @@
 const { response } = require("express");
 
-// const checkRegistration = function(req, database, email) {
-//   if (!req.body.email || !req.body.password) {
-//     res.statusCode = 400;
-//     return false;
-//   }
-  
-//   for (const user of Object.entries(database))
-//     if (user[email]) {
-//       return false;
-//     }
-// };
-
 const isExistingUser = (database, email) => {
     
   for (const user in database) {
@@ -22,8 +10,17 @@ const isExistingUser = (database, email) => {
   return false;
 };
 
+const checkUser = (database, userInfo, res) => {
+  const { email, password } = userInfo;
+  for (const user in database) {
+    if (database[user].email === email && database[user].password === password) {
+      return res.cookie("user_id", database[user].id);
+    }
+  } return res.status(403).send('403 - Your email and password do not match.');
+};
 
 
 
 
-module.exports = { isExistingUser };
+
+module.exports = { isExistingUser, checkUser };
