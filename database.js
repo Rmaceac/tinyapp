@@ -3,6 +3,18 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// let urlDatabase = {
+//   "b2xVn2": {
+//     longURL: "http://www.lighthouselabs.ca",
+//     userID: "randomUser"
+//   },
+
+//   "9sm5xK": {
+//     longURL: "http://www.google.com",
+//     userID: "randomUser"
+//   }
+// };
+
 const users = {
 
   "randomUser": {

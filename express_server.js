@@ -5,29 +5,18 @@ const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 
-const { isExistingUser, checkUser } = require('./helpers');
-const { urlDatabase, users } = require('./database');
-
 const app = express();
 
-app.use(morgan('dev'));
+const { isExistingUser, checkUser, generateShortURL } = require('./helpers');
+const { urlDatabase, users } = require('./database');
+
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
+app.use(morgan('dev'));
 app.set("view engine", "ejs");
 
 const PORT = 8080;
-
-// };
-
-const generateShortURL = () => {
-  let result = "";
-  const charsList = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const numOfChars = charsList.length;
-  for (let i = 0; i < 6; i++) {
-    result += charsList[Math.floor(Math.random() * numOfChars)];
-  }
-  return result;
-};
 
 // ORIGINAL TEST HOME PAGE
 app.get("/", (req, res) => {
@@ -66,7 +55,7 @@ app.get("/urls/new", (req, res) => {
 
 // CREATES A NEW SHORT URL FOR A PROVIDED LONGURL
 app.post("/urls/new", (req, res) => {
-  const newShortURL = generateShortURL();
+  const newShortURL = generateShortURL(6);
   const newLongURL = req.body.longURL;
   urlDatabase[newShortURL] = newLongURL;
   res.redirect("/urls");

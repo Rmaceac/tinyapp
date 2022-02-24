@@ -19,6 +19,15 @@ const checkUser = (database, userInfo, res) => {
   } return res.status(403).send('403 - Your email and password do not match.');
 };
 
+// parameter "num" is the desired length of characters
+const generateShortURL = (num) => {
+  let result = "";
+  const charsList = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const numOfChars = charsList.length;
+  for (let i = 0; i < num; i++) {
+    result += charsList[Math.floor(Math.random() * numOfChars)];
+  }
+  return result;
+};
 
-
-module.exports = { isExistingUser, checkUser };
+module.exports = { isExistingUser, checkUser, generateShortURL };
