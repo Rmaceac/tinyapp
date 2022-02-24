@@ -20,7 +20,7 @@ const PORT = 8080;
 
 // ORIGINAL TEST HOME PAGE
 app.get("/", (req, res) => {
-  res.send("Hello");
+  res.send("Welcome to the Home Page");
 });
 
 // LOADS MAIN URL DISPLAY PAGE
@@ -35,7 +35,7 @@ app.get("/urls", (req, res) => {
 // REDIRECTS THE USER TO THE LONG URL OF A SPECIFIC SHORTURL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -57,7 +57,10 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls/new", (req, res) => {
   const newShortURL = generateShortURL(6);
   const newLongURL = req.body.longURL;
-  urlDatabase[newShortURL] = newLongURL;
+  const userID = req.cookies.user_id;
+
+  urlDatabase[newShortURL] = { longURL: newLongURL, userID: userID };
+
   res.redirect("/urls");
 });
 
@@ -112,9 +115,10 @@ app.post("/logout", (req, res) => {
 
 // DISPLAYS A SPECIFIC SHORT URL'S DETAILS
 app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
   const templateVars = {
-    longURL: urlDatabase[req.params.shortURL],
-    shortURL: req.params.shortURL,
+    longURL: urlDatabase[shortURL].longURL,
+    shortURL: shortURL,
     "user_id": req.cookies["user_id"]
   };
   res.render("urls_show", templateVars);
@@ -123,7 +127,7 @@ app.get("/urls/:shortURL", (req, res) => {
 // EDITS THE LONG URL FOR ITS ASSOCIATED SHORT URL IN THE DATABASE
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
