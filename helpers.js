@@ -12,21 +12,18 @@ const { response } = require("express");
 //     }
 // };
 
-const authenticateUser = (database, email, password) => {
-  if (!email || !password) {
-    return false;
-  }
-  
+const isExistingUser = (database, email) => {
+    
   for (const user in database) {
     if (database[user].email === email) {
-      return false;
+      return true;
     }
   }
-  return true;
+  return false;
 };
 
 
 
 
 
-module.exports = { authenticateUser };
+module.exports = { isExistingUser };
