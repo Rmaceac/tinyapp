@@ -4,6 +4,8 @@ const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 
+const { authenticateUser } = require('./helpers');
+
 const app = express();
 
 app.use(morgan('dev'));
@@ -81,16 +83,28 @@ app.get("/register", (req, res) => {
 
 //REGISTERS A NEW USER AND STORES THEIR INFORMATION IN THE DATABASE
 app.post("/register", (req, res) => {
+
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send('400 - Bad Request');
+  }
+
+  if (!authenticateUser(users, req.body.email)) {
+    return res.status(400).send('400 - Email has already been registered');
+  }
+
   const userID = generateShortURL();
   users[userID] = { id: userID, email: req.body.email, password: req.body.password};
   res.cookie("user_id", userID);
-  
   res.redirect("/urls");
 });
 
 // DISPLAYS THE URL DATABASE IN JSON FORMAT ON THE BROWSER
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 
 // LOGS A USER IN AND STORES USERNAME COOKIE
