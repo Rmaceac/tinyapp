@@ -12,22 +12,12 @@ const isExistingUser = (database, email) => {
   return false;
 };
 
-// checks user credentials when logging in
-// const checkUser = (database, userInfo, res) => {
-//   const { email, password } = userInfo;
-//   for (const user in database) {
-//     if (database[user].email === email && database[user].password === password) {
-//       return res.cookie("user_id", database[user].id);
-//     }
-//   } return res.status(403).send('403 - Your email and password do not match.');
-// };
-
-const checkUser = (database, userInfo, res) => {
+const checkUser = (database, userInfo, req, res) => {
   const { email, password } = userInfo;
   for (const user in database) {
     const hashedPassword = database[user].password;
     if (database[user].email === email && bcrypt.compareSync(password, hashedPassword)) {
-      return res.cookie("user_id", database[user].id);
+      return req.session["user_id"] = database[user].id;
     }
   } return res.status(403).send('403 - Your email and password do not match.');
 };

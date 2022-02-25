@@ -1,17 +1,17 @@
 let urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "randomUser"
+    userID: "otoRw4u8"
   },
 
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: "randomUser"
+    userID: "otoRw4u8"
   },
 
   "7fdsHd": {
     longURL: "http://www.amazon.ca",
-    userID: "someguy"
+    userID: "m8G3DxJC"
   }
 };
 

@@ -3,7 +3,7 @@ const express = require('express');
 const res = require('express/lib/response');
 const morgan = require('morgan');
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 
 const app = express();
@@ -13,7 +13,11 @@ const { urlDatabase, users } = require('./database');
 
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  // secret keys should obviously/normally NOT be stored in a git repo.
+  keys: ["super secret key"]
+}));
 app.use(morgan('dev'));
 app.set("view engine", "ejs");
 
@@ -26,7 +30,7 @@ app.get("/", (req, res) => {
 
 // LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   
   // for filtering which URLs are visible based on which user is logged in
   const filteredURLs = {};
@@ -65,7 +69,7 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
 
   const templateVars = {
     "user_id": userID
@@ -82,7 +86,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls/new", (req, res) => {
   const newShortURL = generateShortURL(6);
   const newLongURL = req.body.longURL;
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
 
   //redirect users who are not logged in
   if (!users[userID]) {
@@ -105,7 +109,7 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  const templateVars = { "user_id": req.cookies["user_id"] };
+  const templateVars = { "user_id": req.session["user_id"] };
 
   if (!email || !password) {
     templateVars.msg = "400 - Please fill out both fields.";
@@ -121,7 +125,7 @@ app.post("/register", (req, res) => {
   const newUserID = generateShortURL(8);
   users[newUserID] = { id: newUserID, email: req.body.email, password: hashedPassword};
 
-  res.cookie("user_id", newUserID);
+  req.session["user_id"] = users[newUserID];
   res.redirect("/urls");
 });
 
@@ -145,20 +149,19 @@ app.post("/login", (req, res) => {
     return res.status(403).send('403 - That email is not yet registered.');
   }
 
-  checkUser(users, req.body, res);
-  console.log("Request Body:", req.body);
+  checkUser(users, req.body, req, res);
   res.redirect("/urls");
 });
 
 // LOGS THE USER OUT AND CLEARS USERNAME COOKIE
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
 // DISPLAYS A SPECIFIC SHORT URL'S DETAILS
 app.get("/urls/:shortURL", (req, res) => {
-  const loggedInUser = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
   
   if (!urlDatabase[shortURL]) {
@@ -168,14 +171,14 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     longURL: urlDatabase[shortURL].longURL,
     shortURL: shortURL,
-    "user_id": loggedInUser,
+    "user_id": userID,
     msg: "That URL isn't yours!"
   };
 
   
   // send error if non-user or wrong user tries to access
   // another user's URL
-  if (loggedInUser !== urlDatabase[shortURL].userID) {
+  if (userID !== urlDatabase[shortURL].userID) {
     res.render("error", templateVars);
     return;
   }
@@ -184,11 +187,11 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // EDITS THE LONG URL FOR ITS ASSOCIATED SHORT URL IN THE DATABASE
 app.post("/urls/:shortURL", (req, res) => {
-  const loggedInUser = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL].longURL = req.body.longURL;
 
-  if (!loggedInUser) {
+  if (!userID) {
     res.status(401).send("401 - Unauthorized request. That URL Isn't yours.");
     return;
   }
@@ -198,14 +201,14 @@ app.post("/urls/:shortURL", (req, res) => {
 // DELETES A URL FROM THE MAIN URL INDEX PAGE
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  const loggedInUser = req.cookies["user_id"];
+  const userID = req.session["user_id"];
 
-  if (!loggedInUser) {
+  if (!userID) {
     res.status(400).send(`Error: Cannot POST ${shortURL}/delete`);
     return;
   }
 
-  if (loggedInUser !== urlDatabase[shortURL].userID) {
+  if (userID !== urlDatabase[shortURL].userID) {
     res.render("error");
   }
 
