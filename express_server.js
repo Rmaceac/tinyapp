@@ -8,9 +8,14 @@ const bcrypt = require('bcryptjs');
 
 const app = express();
 
-const { isExistingUser, checkUser, generateShortURL } = require('./helpers');
-const { urlDatabase, users } = require('./database');
+const {
+  isExistingUser,
+  checkUser,
+  generateShortURL,
+  getUserByEmail
+} = require('./helpers');
 
+const { urlDatabase, users } = require('./database');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
@@ -22,6 +27,11 @@ app.use(morgan('dev'));
 app.set("view engine", "ejs");
 
 const PORT = 8080;
+
+// SERVER LISTENING ON PORT 8080
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}.`);
+});
 
 // ORIGINAL TEST HOME PAGE
 app.get("/", (req, res) => {
@@ -216,7 +226,4 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-// SERVER LISTENING ON PORT INDICATED ABOVE
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}.`);
-});
+// console.log(getUserByEmail(users, "someone@example.com"));

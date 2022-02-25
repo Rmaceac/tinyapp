@@ -32,4 +32,18 @@ const generateShortURL = (num) => {
   return result;
 };
 
-module.exports = { isExistingUser, checkUser, generateShortURL };
+// return user object when given database to search and email
+const getUserByEmail = (database, email) => {
+  for (const user in database) {
+    if (database[user].email === email) {
+      return user;
+    }
+  }
+  return undefined;
+};
+
+module.exports = {
+  isExistingUser,
+  checkUser,
+  generateShortURL,
+  getUserByEmail };
