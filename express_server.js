@@ -111,7 +111,9 @@ app.post("/urls/new", (req, res) => {
 
 // DISPLAYS THE REGISTER  NEW USER PAGE AND FORM
 app.get("/register", (req, res) => {
-  res.render("register");
+  const userID = req.session.user_id;
+  const templateVars = { "user_id": userID };
+  res.render("register", templateVars);
 });
 
 //REGISTERS A NEW USER AND STORES THEIR INFORMATION IN THE DATABASE
@@ -146,7 +148,9 @@ app.get("/urls.json", (req, res) => {
 
 // DISPLAY LOGIN PAGE
 app.get("/login", (req, res) => {
-  res.render("login");
+  const userID = req.session.user_id;
+  const templateVars = { "user_id": userID };
+  res.render("login", templateVars);
 });
 
 // LOGS A USER IN AND STORES USERNAME COOKIE
@@ -166,7 +170,7 @@ app.post("/login", (req, res) => {
 // LOGS THE USER OUT AND CLEARS USERNAME COOKIE
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // DISPLAYS A SPECIFIC SHORT URL'S DETAILS
