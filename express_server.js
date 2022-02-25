@@ -53,7 +53,7 @@ app.get("/urls", (req, res) => {
       filteredURLs[key] = url;
     }
   }
-  // passing variables to the header partial and error page
+  
   const templateVars = {
     urls: filteredURLs,
     "user_id": userID,
