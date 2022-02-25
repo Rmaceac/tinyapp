@@ -32,7 +32,7 @@
               <td><%= urls[url].longURL %></td>
               <td>
                 <form method="GET" action="/urls/<%= url %>">
-                  <a href="/urls/<%= url %>">Edit this link</a></form>
+                  <button class="btn btn-warning">Edit</button>
               </td>
               <td>
                 <form method="POST" action="/urls/<%= url %>/delete">

@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
 // LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
-  
+  // const email = (users[userID].email); <---------------- FIX
   // for filtering which URLs are visible based on which user is logged in
   const filteredURLs = {};
   for (let key in urlDatabase) {
@@ -54,6 +54,7 @@ app.get("/urls", (req, res) => {
   const templateVars = {
     urls: filteredURLs,
     "user_id": userID,
+    // "email": email, <---------------- FIX
     msg: "You must log in to view this page."
   };
 
@@ -80,14 +81,17 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const userID = req.session.user_id;
-
-  const templateVars = {
-    "user_id": userID
-  };
   // to redirect clients who are not logged in
   if (!userID) {
     return res.redirect("/login");
   }
+
+  // const email = (users[userID].email); <-------- FIX
+  const templateVars = {
+    "user_id": userID,
+    // "email": email <---------------- FIX
+  };
+  
 
   return res.render("urls_new", templateVars);
 });
