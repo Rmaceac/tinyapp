@@ -102,20 +102,19 @@ app.get("/register", (req, res) => {
 
 //REGISTERS A NEW USER AND STORES THEIR INFORMATION IN THE DATABASE
 app.post("/register", (req, res) => {
-  
-  if (!req.body.email || !req.body.password) {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
     return res.status(400).send('400 - Please fill out all fields');
   } else if (isExistingUser(users, req.body.email, req.body.password)) {
     return res.status(400).send('400 - That email is already registered');
   }
 
-  const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
 
+  // using generateShortURL function to generate random user IDs
   const userID = generateShortURL(8);
   users[userID] = { id: userID, email: req.body.email, password: hashedPassword};
-
-  console.log("User Database:", users);
 
   res.cookie("user_id", userID);
   res.redirect("/urls");
@@ -133,14 +132,16 @@ app.get("/login", (req, res) => {
 
 // LOGS A USER IN AND STORES USERNAME COOKIE
 app.post("/login", (req, res) => {
-  
-  if (!req.body.email || !req.body.password) {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
     return res.status(400).send('400 - Please fill out all fields.');
-  } else if (!isExistingUser(users, req.body.email)) {
+  } else if (!isExistingUser(users, email)) {
     return res.status(403).send('403 - That email is not yet registered.');
   }
 
   checkUser(users, req.body, res);
+  console.log("Request Body:", req.body);
   res.redirect("/urls");
 });
 
