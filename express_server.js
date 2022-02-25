@@ -167,8 +167,15 @@ app.get("/urls.json", (req, res) => {
 
 // DISPLAY LOGIN PAGE
 app.get("/login", (req, res) => {
+  
   const userID = req.session.user_id;
   const templateVars = { "user_id": userID };
+  
+  if (userID) {
+    res.redirect("/urls");
+    return;
+  }
+
   res.render("login", templateVars);
 });
 
@@ -197,11 +204,7 @@ app.post("/logout", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
-
-  if (!urlDatabase[shortURL]) {
-    res.render("error", { "user_id": userID, msg: "Error: That URL does not exist."});
-  }
-
+  
   // email will only be defined if a user is logged in
   let email = userID ? users[userID].email : null;
 
@@ -213,6 +216,10 @@ app.get("/urls/:shortURL", (req, res) => {
     msg: "That URL isn't yours!"
   };
   
+  if (!urlDatabase[shortURL]) {
+    res.status(400).send("Error: That URL does not exist.");
+  }
+
   // send error if non-user or wrong user tries to access
   // another user's URL
   if (userID !== urlDatabase[shortURL].userID) {
@@ -228,10 +235,23 @@ app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL].longURL = req.body.longURL;
 
+  let email = userID ? users[userID].email : null;
+
+  const templateVars = {
+    "user_id": userID,
+    email
+  };
+
   if (!userID) {
     res.status(401).send("401 - Unauthorized request. That URL Isn't yours.");
     return;
   }
+
+  if (userID !== urlDatabase[shortURL].userID) {
+    res.render("error", templateVars);
+    return;
+  }
+
   res.redirect("/urls");
 });
 
@@ -240,6 +260,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   const userID = req.session["user_id"];
   console.log("ShortURL:", shortURL);
+
+  let email = userID ? users[userID].email : null;
+
+  const templateVars = {
+    "user_id": userID,
+    email
+  };
 
   if (!userID) {
     res.status(400).send(`Error: Cannot POST ${shortURL}/delete`);
