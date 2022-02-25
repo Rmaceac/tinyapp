@@ -114,7 +114,7 @@ app.post("/register", (req, res) => {
   if (!email || !password) {
     templateVars.msg = "400 - Please fill out both fields.";
     res.render("error", templateVars);
-  } else if (isExistingUser(users, email, password)) {
+  } else if (isExistingUser(users, email)) {
     templateVars.msg = "409 - That email is already registered.";
     res.render("error", templateVars);
   }

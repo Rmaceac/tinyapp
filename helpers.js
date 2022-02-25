@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 
 // checks if a user already exists in the "users" database
 const isExistingUser = (database, email) => {
-    
   for (const user in database) {
     if (database[user].email === email) {
       return true;
