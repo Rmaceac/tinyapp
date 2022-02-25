@@ -25,18 +25,38 @@ app.get("/", (req, res) => {
 
 // LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
+  const loggedInUser = req.cookies["user_id"];
+  
+  const filteredURLs = {};
+  for (let key in urlDatabase) {
+    const url = urlDatabase[key];
+    if (loggedInUser === url.userID) {
+      filteredURLs[key] = url;
+    }
+  }
+
   const templateVars = {
-    urls: urlDatabase,
-    "user_id": req.cookies["user_id"]
+    urls: filteredURLs,
+    "user_id": loggedInUser,
+    msg: "You must log in to view this page."
   };
+
+  // if no one is logged in when requesting this page, redirect to error page.
+  if (!loggedInUser) {
+    res.render("error", templateVars);
+    return;
+  }
+
   res.render("urls_index", templateVars);
 });
 
 // REDIRECTS THE USER TO THE LONG URL OF A SPECIFIC SHORTURL
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
+
   if (!urlDatabase[shortURL]) {
     res.status(404).send("404 - That path does not exist...");
+    return;
   }
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
@@ -61,6 +81,12 @@ app.post("/urls/new", (req, res) => {
   const newShortURL = generateShortURL(6);
   const newLongURL = req.body.longURL;
   const userID = req.cookies.user_id;
+
+  //redirect users who are not logged in
+  if (!users[userID]) {
+    res.status(500).send("Error! Cannot POST /urls/new");
+    return;
+  }
 
   urlDatabase[newShortURL] = { longURL: newLongURL, userID: userID };
 
@@ -118,25 +144,54 @@ app.post("/logout", (req, res) => {
 
 // DISPLAYS A SPECIFIC SHORT URL'S DETAILS
 app.get("/urls/:shortURL", (req, res) => {
+  const loggedInUser = req.cookies["user_id"];
   const shortURL = req.params.shortURL;
+  
   const templateVars = {
     longURL: urlDatabase[shortURL].longURL,
     shortURL: shortURL,
-    "user_id": req.cookies["user_id"]
+    "user_id": loggedInUser,
+    msg: "That URL isn't yours!"
   };
+  // sed error if non-user or wrong user tries to access another users URL
+  if (loggedInUser !== urlDatabase[shortURL].userID) {
+    res.render("error", templateVars);
+    return;
+  }
   res.render("urls_show", templateVars);
 });
 
 // EDITS THE LONG URL FOR ITS ASSOCIATED SHORT URL IN THE DATABASE
 app.post("/urls/:shortURL", (req, res) => {
+  const loggedInUser = req.cookies["user_id"];
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL].longURL = req.body.longURL;
+
+  if (!loggedInUser) {
+    res.redirect("/login");
+    return;
+  }
+
+  if (loggedInUser !== urlDatabase[shortURL].userID) {
+    res.render("error", {msg: "That URL doesn't belong to you!"});
+  }
   res.redirect("/urls");
 });
 
 // DELETES A URL FROM THE MAIN URL INDEX PAGE
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
+  const loggedInUser = req.cookies["user_id"];
+
+  if (!loggedInUser) {
+    res.status(400).send(`Error: Cannot POST ${shortURL}/delete`);
+    return;
+  }
+
+  if (loggedInUser !== urlDatabase[shortURL].userID) {
+    res.render("error");
+  }
+
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
