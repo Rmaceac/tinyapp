@@ -41,7 +41,10 @@ app.get("/", (req, res) => {
 // LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
-  // const email = (users[userID].email); <---------------- FIX
+  
+  // email will only be defined if a user is logged in
+  let email = userID ? users[userID].email : null;
+
   // for filtering which URLs are visible based on which user is logged in
   const filteredURLs = {};
   for (let key in urlDatabase) {
@@ -54,10 +57,10 @@ app.get("/urls", (req, res) => {
   const templateVars = {
     urls: filteredURLs,
     "user_id": userID,
-    // "email": email, <---------------- FIX
+    email,
     msg: "You must log in to view this page."
   };
-
+  
   // if no one is logged in when requesting this page, redirect to error page.
   if (!userID) {
     res.render("error", templateVars);
@@ -70,9 +73,19 @@ app.get("/urls", (req, res) => {
 // REDIRECTS THE USER TO THE LONG URL OF A SPECIFIC SHORTURL
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
+  const userID = req.session.user_id;
+  
+  // email will only be defined if a user is logged in
+  let email = userID ? users[userID].email : null;
+
+  const templateVars = {
+    "user_id": userID,
+    msg: "That URL does not exist.",
+    email
+  };
 
   if (!urlDatabase[shortURL]) {
-    res.status(404).send("404 - That path does not exist...");
+    res.render("error", templateVars);
     return;
   }
   const longURL = urlDatabase[shortURL].longURL;
@@ -81,17 +94,19 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const userID = req.session.user_id;
-  // to redirect clients who are not logged in
+  
   if (!userID) {
-    return res.redirect("/login");
+    res.redirect("/login");
+    return;
   }
 
-  // const email = (users[userID].email); <-------- FIX
+  // email will only be defined if a user is logged in
+  let email = userID ? users[userID].email : null;
+
   const templateVars = {
     "user_id": userID,
-    // "email": email <---------------- FIX
+    email
   };
-  
 
   return res.render("urls_new", templateVars);
 });
@@ -161,6 +176,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  
   if (!email || !password) {
     return res.status(400).send('400 - Please fill out all fields.');
   } else if (!isExistingUser(users, email)) {
@@ -181,18 +197,21 @@ app.post("/logout", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
-  
+
   if (!urlDatabase[shortURL]) {
-    res.status(404).send("404 - That URL doesn't exist.");
+    res.render("error", { "user_id": userID, msg: "Error: That URL does not exist."});
   }
+
+  // email will only be defined if a user is logged in
+  let email = userID ? users[userID].email : null;
 
   const templateVars = {
     longURL: urlDatabase[shortURL].longURL,
     shortURL: shortURL,
     "user_id": userID,
+    email,
     msg: "That URL isn't yours!"
   };
-
   
   // send error if non-user or wrong user tries to access
   // another user's URL
@@ -220,6 +239,7 @@ app.post("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   const userID = req.session["user_id"];
+  console.log("ShortURL:", shortURL);
 
   if (!userID) {
     res.status(400).send(`Error: Cannot POST ${shortURL}/delete`);
@@ -233,5 +253,3 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
-
-// console.log(getUserByEmail(users, "someone@example.com"));
