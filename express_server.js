@@ -132,6 +132,12 @@ app.post("/urls/new", (req, res) => {
 app.get("/register", (req, res) => {
   const userID = req.session.user_id;
   const templateVars = { "user_id": userID };
+
+  if (userID) {
+    res.redirect("/urls");
+    return;
+  }
+  
   res.render("register", templateVars);
 });
 
@@ -184,10 +190,14 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   
+  const templateVars = { "user_id": req.session["user_id"] };
+
   if (!email || !password) {
-    return res.status(400).send('400 - Please fill out all fields.');
+    templateVars.msg = "400 - Please fill out both fields.";
+    res.render("error", templateVars);
   } else if (!isExistingUser(users, email)) {
-    return res.status(403).send('403 - That email is not yet registered.');
+    templateVars.msg = "409 - That email is not yet registered.";
+    res.render("error", templateVars);
   }
 
   checkUser(users, req.body, req, res);
@@ -197,6 +207,8 @@ app.post("/login", (req, res) => {
 // LOGS THE USER OUT AND CLEARS USERNAME COOKIE
 app.post("/logout", (req, res) => {
   req.session = null;
+  // instructions say to redirect to /urls, but also say to redirect
+  // to /login if user is not logged in... so I'm redirecting straight to /login.
   res.redirect("/login");
 });
 
