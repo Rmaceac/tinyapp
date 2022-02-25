@@ -4,6 +4,7 @@ const res = require('express/lib/response');
 const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const loggedInUser = req.cookies["user_id"];
   
+  // for filtering which URLs are visible based on which user is logged in
   const filteredURLs = {};
   for (let key in urlDatabase) {
     const url = urlDatabase[key];
@@ -34,7 +36,7 @@ app.get("/urls", (req, res) => {
       filteredURLs[key] = url;
     }
   }
-
+  // passing variables to the header partial and error page
   const templateVars = {
     urls: filteredURLs,
     "user_id": loggedInUser,
@@ -107,8 +109,14 @@ app.post("/register", (req, res) => {
     return res.status(400).send('400 - That email is already registered');
   }
 
-  const userID = generateShortURL();
-  users[userID] = { id: userID, email: req.body.email, password: req.body.password};
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  const userID = generateShortURL(8);
+  users[userID] = { id: userID, email: req.body.email, password: hashedPassword};
+
+  console.log("User Database:", users);
+
   res.cookie("user_id", userID);
   res.redirect("/urls");
 });
@@ -147,13 +155,20 @@ app.get("/urls/:shortURL", (req, res) => {
   const loggedInUser = req.cookies["user_id"];
   const shortURL = req.params.shortURL;
   
+  if (!urlDatabase[shortURL]) {
+    res.status(404).send("404 - That URL doesn't exist.");
+  }
+
   const templateVars = {
     longURL: urlDatabase[shortURL].longURL,
     shortURL: shortURL,
     "user_id": loggedInUser,
     msg: "That URL isn't yours!"
   };
-  // sed error if non-user or wrong user tries to access another users URL
+
+  
+  // send error if non-user or wrong user tries to access
+  // another user's URL
   if (loggedInUser !== urlDatabase[shortURL].userID) {
     res.render("error", templateVars);
     return;
@@ -168,12 +183,8 @@ app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[shortURL].longURL = req.body.longURL;
 
   if (!loggedInUser) {
-    res.redirect("/login");
+    res.status(401).send("401 - Unauthorized request. That URL Isn't yours.");
     return;
-  }
-
-  if (loggedInUser !== urlDatabase[shortURL].userID) {
-    res.render("error", {msg: "That URL doesn't belong to you!"});
   }
   res.redirect("/urls");
 });
