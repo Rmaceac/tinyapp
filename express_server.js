@@ -26,25 +26,25 @@ app.get("/", (req, res) => {
 
 // LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
-  const loggedInUser = req.cookies["user_id"];
+  const userID = req.cookies["user_id"];
   
   // for filtering which URLs are visible based on which user is logged in
   const filteredURLs = {};
   for (let key in urlDatabase) {
     const url = urlDatabase[key];
-    if (loggedInUser === url.userID) {
+    if (userID === url.userID) {
       filteredURLs[key] = url;
     }
   }
   // passing variables to the header partial and error page
   const templateVars = {
     urls: filteredURLs,
-    "user_id": loggedInUser,
+    "user_id": userID,
     msg: "You must log in to view this page."
   };
 
   // if no one is logged in when requesting this page, redirect to error page.
-  if (!loggedInUser) {
+  if (!userID) {
     res.render("error", templateVars);
     return;
   }
@@ -104,19 +104,24 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+
+  const templateVars = { "user_id": req.cookies["user_id"] };
+
   if (!email || !password) {
-    return res.status(400).send('400 - Please fill out all fields');
-  } else if (isExistingUser(users, req.body.email, req.body.password)) {
-    return res.status(400).send('400 - That email is already registered');
+    templateVars.msg = "400 - Please fill out both fields.";
+    res.render("error", templateVars);
+  } else if (isExistingUser(users, email, password)) {
+    templateVars.msg = "409 - That email is already registered.";
+    res.render("error", templateVars);
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   // using generateShortURL function to generate random user IDs
-  const userID = generateShortURL(8);
-  users[userID] = { id: userID, email: req.body.email, password: hashedPassword};
+  const newUserID = generateShortURL(8);
+  users[newUserID] = { id: newUserID, email: req.body.email, password: hashedPassword};
 
-  res.cookie("user_id", userID);
+  res.cookie("user_id", newUserID);
   res.redirect("/urls");
 });
 
