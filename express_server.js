@@ -35,15 +35,16 @@ app.listen(PORT, () => {
 
 // ORIGINAL TEST HOME PAGE
 app.get("/", (req, res) => {
-  res.send("Welcome to the Home Page");
+  res.redirect("/urls");
 });
 
 // LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
-  
+  console.log("REQ.SESSION:", req.session);
+  console.log("REQ.SESSION.USER_ID:", req.session.user_id);
   // email will only be defined if a user is logged in
-  let email = userID ? users[userID].email : null;
+  let email = userID ? users[userID.id].email : null;
 
   // for filtering which URLs are visible based on which user is logged in
   const filteredURLs = {};
@@ -76,7 +77,7 @@ app.get("/u/:id", (req, res) => {
   const userID = req.session.user_id;
   
   // email will only be defined if a user is logged in
-  let email = userID ? users[userID].email : null;
+  let email = userID ? users[userID.id].email : null;
 
   const templateVars = {
     "user_id": userID,
@@ -101,7 +102,7 @@ app.get("/urls/new", (req, res) => {
   }
 
   // email will only be defined if a user is logged in
-  let email = userID ? users[userID].email : null;
+  let email = userID ? users[userID.id].email : null;
 
   const templateVars = {
     "user_id": userID,
@@ -218,7 +219,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   
   // email will only be defined if a user is logged in
-  let email = userID ? users[userID].email : null;
+  let email = userID ? users[userID.id].email : null;
 
   const templateVars = {
     longURL: urlDatabase[shortURL].longURL,
@@ -247,7 +248,7 @@ app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL].longURL = req.body.longURL;
 
-  let email = userID ? users[userID].email : null;
+  let email = userID ? users[userID.id].email : null;
 
   const templateVars = {
     "user_id": userID,
@@ -273,7 +274,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
   console.log("ShortURL:", shortURL);
 
-  let email = userID ? users[userID].email : null;
+  let email = userID ? users[userID.id].email : null;
 
   const templateVars = {
     "user_id": userID,
