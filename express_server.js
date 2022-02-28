@@ -41,10 +41,9 @@ app.get("/", (req, res) => {
 // LOADS MAIN URL DISPLAY PAGE
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
-  console.log("REQ.SESSION:", req.session);
-  console.log("REQ.SESSION.USER_ID:", req.session.user_id);
+
   // email will only be defined if a user is logged in
-  let email = userID ? users[userID.id].email : null;
+  let email = userID ? users[userID].email : null;
 
   // for filtering which URLs are visible based on which user is logged in
   const filteredURLs = {};
@@ -102,7 +101,7 @@ app.get("/urls/new", (req, res) => {
   }
 
   // email will only be defined if a user is logged in
-  let email = userID ? users[userID.id].email : null;
+  let email = userID ? users[userID].email : null;
 
   const templateVars = {
     "user_id": userID,
@@ -119,7 +118,7 @@ app.post("/urls/new", (req, res) => {
   const userID = req.session.user_id;
 
   //redirect users who are not logged in
-  if (!users[userID]) {
+  if (!userID) {
     res.status(500).send("Error! Cannot POST /urls/new");
     return;
   }
@@ -162,8 +161,7 @@ app.post("/register", (req, res) => {
   // using generateShortURL function to generate random user IDs
   const newUserID = generateShortURL(8);
   users[newUserID] = { id: newUserID, email: req.body.email, password: hashedPassword};
-
-  req.session["user_id"] = users[newUserID];
+  req.session["user_id"] = users[newUserID].id;
   res.redirect("/urls");
 });
 
@@ -191,7 +189,7 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   
-  const templateVars = { "user_id": req.session["user_id"] };
+  const templateVars = { "user_id": req.session["user_id"], email };
 
   if (!email || !password) {
     templateVars.msg = "400 - Please fill out both fields.";
@@ -215,11 +213,11 @@ app.post("/logout", (req, res) => {
 
 // DISPLAYS A SPECIFIC SHORT URL'S DETAILS
 app.get("/urls/:shortURL", (req, res) => {
-  const userID = req.session["user_id"];
+  const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
   
   // email will only be defined if a user is logged in
-  let email = userID ? users[userID.id].email : null;
+  let email = userID ? users[userID].email : null;
 
   const templateVars = {
     longURL: urlDatabase[shortURL].longURL,
@@ -248,7 +246,7 @@ app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL].longURL = req.body.longURL;
 
-  let email = userID ? users[userID.id].email : null;
+  let email = userID ? users[userID].email : null;
 
   const templateVars = {
     "user_id": userID,
@@ -272,9 +270,8 @@ app.post("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   const userID = req.session["user_id"];
-  console.log("ShortURL:", shortURL);
 
-  let email = userID ? users[userID.id].email : null;
+  let email = userID ? users[userID].email : null;
 
   const templateVars = {
     "user_id": userID,
